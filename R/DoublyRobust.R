@@ -8,10 +8,9 @@
 #'@param indXout A vector of column names indicating the covariates included in the outcome model
 #'@param sensitivity The specified sensitivity between 0 and 1
 #'@param specificity The specified specificity between 0 and 1
-#'@param numBoot The specified number of bootstrap replicates for variance estimation
 #'@param sharePara if the treated and untreated groups share parameters for covariates in the logistic outcome model (i.e., assuming Y~ T+X), then set \code{sharePara=TRUE}; if not (i.e., modeling Y~ X for the treated and untreated groups separately), then set \code{sharePara=FALSE}. By default,  \code{sharePara=FALSE}
 #'@param confidence The confidence level between 0 and 1; the default is 0.95 corresponding to a 95 per cent confidence interval
-#'@return A list of the estimate of average treatment effect, bootstrap standard error and confidence interval
+#'@return A list of the estimate of average treatment effect, standard error and confidence interval
 #'@import nleqslv
 #'@import stats
 #'
@@ -30,11 +29,13 @@
 #'da=data.frame(A=A,X=X,xx=xx,Yast=Yast)
 #'head(da)
 #'#apply the doubly robust correction method with sensitivity=0.95 and specificity=0.85
-#'set.seed(100)
-#'KnownErrorDR(da,"A","Yast",c("X","xx"),c("X","xx"),0.95,0.85,50,FALSE,0.95)
+#'KnownErrorDR(da,"A","Yast",c("X","xx"),c("X","xx"),0.95,0.85,FALSE,0.95)
 #'
 #'@export
-KnownErrorDR<-function(data,indA,indYerror,indXtrt,indXout,sensitivity,specificity,numBoot,sharePara=FALSE,confidence=0.95){
+KnownErrorDR<-function(data,indA,indYerror,indXtrt,indXout,sensitivity,specificity,sharePara=FALSE,confidence=0.95){
+  
+  if(sum(apply(data, 2, function(x) as.integer(any(is.na(x)))))>0) stop('invalid dataset with NAs (missing data detected)')
+  
   p11=sensitivity
   p10=1-specificity 
   n=nrow(data)
@@ -52,6 +53,9 @@ KnownErrorDR<-function(data,indA,indYerror,indXtrt,indXout,sensitivity,specifici
   trtX=cbind(rep(1,n),trtX0)
   outX0=da[,indXout]
   outX=as.matrix(cbind(rep(1,n),outX0))
+  outXA=as.matrix(cbind(rep(1,n),outX0,A))
+  outXX1=as.matrix(cbind(rep(1,n),outX0,rep(1,n)))
+  outXX0=as.matrix(cbind(rep(1,n),outX0,rep(0,n)))
   nT=sum(A)
   Ytrt=daTrt[,indYerror]
   outX0Trt=daTrt[,indXout]
@@ -64,7 +68,7 @@ KnownErrorDR<-function(data,indA,indYerror,indXtrt,indXout,sensitivity,specifici
   psfit=predict(gg, type = "response")
   
   if (sharePara==FALSE){
-    #for treament group
+  
   ggout=glm(Ytrt~.,family="binomial",data=as.data.frame(cbind(Ytrt,outX0Trt)))
   intc=ggout$coef
     
@@ -76,6 +80,7 @@ KnownErrorDR<-function(data,indA,indYerror,indXtrt,indXout,sensitivity,specifici
     estgma=optim(intc,fc)$par
   
   m1=1/(1+exp(-outX%*%estgma))
+  gstar1=as.vector(1/(1+exp(-outXTrt%*%estgma)))
   
   ggout=glm(Yout~.,family="binomial",data=as.data.frame(cbind(Yout,outX0Out)))
   intc=ggout$coef
@@ -88,12 +93,86 @@ KnownErrorDR<-function(data,indA,indYerror,indXtrt,indXout,sensitivity,specifici
   } 
   estgma=optim(intc,fc)$par
   m0=1/(1+exp(-outX%*%estgma))
+  gstar0=as.vector(1/(1+exp(-outXOut%*%estgma)))
   
     mu1=mean(A*Y/(psfit*(p11-p10))-(A-psfit)/(psfit)*m1-
                A/psfit*(p10/(p11-p10)))
     mu0=mean((1-A)*Y/((1-psfit)*(p11-p10))+(A-psfit)/(1-psfit)*m0-
                (1-A)/(1-psfit)*(p10/(p11-p10)))
-   mu1-mu0   
+    
+    cor=mu1-mu0  
+  
+  
+  A11=matrix(0,nXtrt,nXtrt)
+  
+  
+  for(i in 1:nXtrt){
+    for(j in 1:nXtrt){
+      A11[i,j]=mean(psfit*(1-psfit)*trtX[,i]*trtX[,j])
+    }
+  }
+  
+  A22=matrix(0,nXout,nXout)
+  A33=A22
+  
+  for(i in 1:nXout){
+    for(j in 1:nXout){
+      A22[i,j]=mean((gstar1*(1-gstar1)*(p11-p10))^2*(Ytrt/((p11*gstar1+p10*(1-gstar1))^2)+(1-Ytrt)/(((1-p11)*gstar1+(1-p10)*(1-gstar1))^2))*outXTrt[,i]*outXTrt[,j]-
+                      (p11-p10)*gstar1*(1-gstar1)*(1-2*gstar1)*(Ytrt/(p11*gstar1+p10*(1-gstar1))-(1-Ytrt)/((1-p11)*gstar1+(1-p10)*(1-gstar1)))*outXTrt[,i]*outXTrt[,j])
+    
+      A33[i,j]=mean((gstar0*(1-gstar0)*(p11-p10))^2*(Yout/((p11*gstar0+p10*(1-gstar0))^2)+(1-Yout)/(((1-p11)*gstar0+(1-p10)*(1-gstar0))^2))*outXOut[,i]*outXOut[,j]-
+                      (p11-p10)*gstar0*(1-gstar0)*(1-2*gstar0)*(Yout/(p11*gstar0+p10*(1-gstar0))-(1-Yout)/((1-p11)*gstar0+(1-p10)*(1-gstar0)))*outXOut[,i]*outXOut[,j])
+      
+    }
+  }
+  
+  A41=rep(0,nXtrt)
+  A51=A41
+  
+  for(i in 1:nXtrt){
+    A41[i]=mean((1-psfit)/psfit*(A*Y/(p11-p10)-A*m1-A*p10/(p11-p10))*trtX[,i])
+    A51[i]=mean(psfit/(1-psfit)*(-(1-A)*Y/(p11-p10)+(1-A)*m0+(1-A)*p10/(p11-p10))*trtX[,i])
+  }
+  
+  A42=rep(0,nXout)
+  A52=A42
+  
+  for(i in 1:nXout){
+    A42[i]=mean((A-psfit)/psfit*m1*(1-m1)*outX[,i])
+    A52[i]=mean(-(A-psfit)/(1-psfit)*m0*(1-m0)*outX[,i])
+  }
+  
+  Arow1=cbind(A11,matrix(0,nXtrt,nXout+nXout+3))
+  Arow2=cbind(matrix(0,nXout,nXtrt),A22,matrix(0,nXout,nXout+3))
+  Arow3=cbind(matrix(0,nXout,nXtrt+nXout),A33,matrix(0,nXout,3))
+  Arow4=c(A41,A42,rep(0,nXout),1,0,0)
+  Arow5=c(A51,rep(0,nXout),A52,0,1,0)
+  Arow6=c(rep(0,nXout+nXout+nXtrt),-1,1,1)
+  
+  Amat=rbind(Arow1,Arow2,Arow3,Arow4,Arow5,Arow6)
+  Ainv=solve(Amat)
+  
+  BB2=matrix(0,n,nXout)
+  BB3=BB2
+  
+  BB1=diag(A-psfit,n,n)%*%as.matrix(trtX)
+  BB2in=diag(gstar1*(1-gstar1)*(p11-p10)*(Ytrt/(p11*gstar1+p10*(1-gstar1))-(1-Ytrt)/((1-p11)*gstar1+(1-p10)*(1-gstar1))),nT,nT)%*%as.matrix(outXTrt)
+  BB2[iAi,]=n/nT*BB2in
+  BB3in=diag(gstar0*(1-gstar0)*(p11-p10)*(Yout/(p11*gstar0+p10*(1-gstar0))-(1-Yout)/((1-p11)*gstar0+(1-p10)*(1-gstar0))),n-nT,n-nT)%*%as.matrix(outXOut)
+  BB3[-iAi,]=n/(n-nT)*BB3in
+  BB4=A*Y/(psfit*(p11-p10))-(A-psfit)/(psfit)*m1-A/psfit*(p10/(p11-p10))-mu1
+  BB5=(1-A)*Y/((1-psfit)*(p11-p10))+(A-psfit)/(1-psfit)*m0-(1-A)/(1-psfit)*(p10/(p11-p10))-mu0
+  BB6=mu1-mu0-cor
+  
+  BBbind=cbind(BB1,BB2,BB3,BB4,BB5,BB6)
+  BB=t(BBbind)%*%BBbind/n
+  
+  varMat=Ainv%*%BB%*%(t(Ainv))/n
+  vars=varMat[nXout+nXout+nXtrt+3,nXout+nXout+nXtrt+3]
+  STD=sqrt(vars)
+  
+  c(cor,STD)
+  
   }
   
   else if (sharePara==TRUE){
@@ -117,11 +196,76 @@ KnownErrorDR<-function(data,indA,indYerror,indXtrt,indXout,sensitivity,specifici
                A/psfit*(p10/(p11-p10)))
     mu0=mean((1-A)*Y/((1-psfit)*(p11-p10))+(A-psfit)/(1-psfit)*m0-
                (1-A)/(1-psfit)*(p10/(p11-p10)))
-    mu1-mu0    
+    cor=mu1-mu0   
+    
+    gstar=as.vector(1/(1+exp(-outX%*%estgmaX-as.matrix(Aestgma*A))))
+    
+    A11=matrix(0,nXtrt,nXtrt)
+    
+  
+    for(i in 1:nXtrt){
+      for(j in 1:nXtrt){
+        A11[i,j]=mean(psfit*(1-psfit)*trtX[,i]*trtX[,j])
+      }
+    }
+    
+    A22=matrix(0,nXout+1,nXout+1)
+  
+    
+    for(i in 1:(nXout+1)){
+      for(j in 1:(nXout+1)){
+        A22[i,j]=mean((gstar*(1-gstar)*(p11-p10))^2*(Y/((p11*gstar+p10*(1-gstar))^2)+(1-Y)/(((1-p11)*gstar+(1-p10)*(1-gstar))^2))*outXA[,i]*outXA[,j]-
+          (p11-p10)*gstar*(1-gstar)*(1-2*gstar)*(Y/(p11*gstar+p10*(1-gstar))-(1-Y)/((1-p11)*gstar+(1-p10)*(1-gstar)))*outXA[,i]*outXA[,j])
+      }
+    }
+    
+    A31=rep(0,nXtrt)
+    A41=A31
+    
+    for(i in 1:nXtrt){
+      A31[i]=mean((1-psfit)/psfit*(A*Y/(p11-p10)-A*m1-A*p10/(p11-p10))*trtX[,i])
+      A41[i]=mean(psfit/(1-psfit)*(-(1-A)*Y/(p11-p10)+(1-A)*m0+(1-A)*p10/(p11-p10))*trtX[,i])
+    }
+    
+    A32=rep(0,nXout+1)
+    A42=A32
+    
+    for(i in 1:(nXout+1)){
+      A32[i]=mean((A-psfit)/psfit*m1*(1-m1)*outXX1[,i])
+      A42[i]=mean(-(A-psfit)/(1-psfit)*m0*(1-m0)*outXX0[,i])
+    }
+    
+    Arow1=cbind(A11,matrix(0,nXtrt,nXout+4))
+    Arow2=cbind(matrix(0,nXout+1,nXtrt),A22,matrix(0,nXout+1,3))
+    Arow3=c(A31,A32,1,0,0)
+    Arow4=c(A41,A42,0,1,0)
+    Arow5=c(rep(0,nXout+1+nXtrt),-1,1,1)
+    
+    Amat=rbind(Arow1,Arow2,Arow3,Arow4,Arow5)
+    Ainv=solve(Amat)
+    
+    BB1=diag(A-psfit,n,n)%*%as.matrix(trtX)
+    BB2=diag(gstar*(1-gstar)*(p11-p10)*(Y/(p11*gstar+p10*(1-gstar))-(1-Y)/((1-p11)*gstar+(1-p10)*(1-gstar))),n,n)%*%as.matrix(outXA)
+    BB3=A*Y/(psfit*(p11-p10))-(A-psfit)/(psfit)*m1-A/psfit*(p10/(p11-p10))-mu1
+    BB4=(1-A)*Y/((1-psfit)*(p11-p10))+(A-psfit)/(1-psfit)*m0-(1-A)/(1-psfit)*(p10/(p11-p10))-mu0
+    BB5=mu1-mu0-cor
+    
+    BBbind=cbind(BB1,BB2,BB3,BB4,BB5)
+    BB=t(BBbind)%*%BBbind/n
+    
+    varMat=Ainv%*%BB%*%(t(Ainv))/n
+    vars=varMat[nXout+1+nXtrt+3,nXout+1+nXtrt+3]
+    STD=sqrt(vars)
+    
+    c(cor,STD)
+    
   }
 }
-cor=once(da=data)
-STD=sd(replicate(numBoot,once(da=data[sample(1:n,replace=TRUE),])))
+
+resu=once(da=data)
+cor=resu[1]
+STD=resu[2]
+
 low=cor-qnorm(1-(1-confidence)/2)*STD
 up=cor+qnorm(1-(1-confidence)/2)*STD
 

@@ -39,6 +39,9 @@
 #'
 #'@export
 EstValidation<-function(maindata,validationdata,indA,indYerror,indX,indY,confidence=0.95){
+  
+  if(sum(apply(maindata, 2, function(x) as.integer(any(is.na(x)))))>0 | sum(apply(validationdata, 2, function(x) as.integer(any(is.na(x)))))>0) stop('invalid dataset with NAs (missing data detected)')
+  
   nv=nrow(validationdata)
   n=nrow(maindata)+nv
   AM=maindata[,indA]

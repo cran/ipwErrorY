@@ -1,11 +1,11 @@
-68aaf2e6c968452a1028d7136c1fc93a *DESCRIPTION
+32e857499475a54633c0bbdd8a7a9ae8 *DESCRIPTION
 5be61780f98539e5446a1fc027fe88a7 *NAMESPACE
-d9db7ae80a382a3a7b841fe4845b76b1 *R/DoublyRobust.R
-36d953132e03360eeb24a647f8eb383a *R/knownMisCalssProb.R
-d7a8b2433206f89426d52479e032cfb6 *R/with2Replicates.R
-072373014682ed519e1bb7316373701d *R/withValidationData.R
+16ecdf67192f91c9a73bd2f2eecdf714 *R/DoublyRobust.R
+58a36965984a915ff1410e7821348306 *R/knownMisCalssProb.R
+09739bc36acb50f000a3d5ce47668dd3 *R/with2Replicates.R
+dd9521f1b68f24990486a6f42d3d47b3 *R/withValidationData.R
 43c791b3a99d760aad54d3f0fbe58049 *man/Est2Replicates.Rd
 aaf4ea77fde639da8e5946c91a81d828 *man/EstValidation.Rd
 33fe83a072bb82c998c33e07ee20c403 *man/KnownError.Rd
-e6c78a14ae21308ed4c987525a2ae7c7 *man/KnownErrorDR.Rd
+5958065aafa3a39f041c3edc58afdfaf *man/KnownErrorDR.Rd
 e6b00d653010cadaee58b4af123c93da *man/ipwErrorY-package.Rd

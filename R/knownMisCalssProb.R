@@ -29,6 +29,9 @@
 #'
 #'@export
 KnownError<-function(data,indA,indYerror,indX,sensitivity,specificity,confidence=0.95){
+  
+  if(sum(apply(data, 2, function(x) as.integer(any(is.na(x)))))>0) stop('invalid dataset with NAs (missing data detected)')
+  
   p11=sensitivity
   p10=1-specificity 
   n=nrow(data)

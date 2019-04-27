@@ -37,6 +37,9 @@
 Est2Replicates<-function(data,indA,indYerror,indX, constraint=c("sensitivity equals specificity",
 "known sensitivity", "known specificity","known prevalence"),sensitivity=NULL,specificity=NULL,prevalence=NULL,confidence=0.95)
   {
+  
+  if(sum(apply(data, 2, function(x) as.integer(any(is.na(x)))))>0) stop('invalid dataset with NAs (missing data detected)')
+  
   n=nrow(data)
   A=data[,indA]
   YastMX=data[,indYerror]

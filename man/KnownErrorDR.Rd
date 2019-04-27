@@ -5,7 +5,7 @@
 \title{Doubly Robust Estimation of ATE with Known Error}
 \usage{
 KnownErrorDR(data, indA, indYerror, indXtrt, indXout, sensitivity, specificity,
-  numBoot, sharePara = FALSE, confidence = 0.95)
+    sharePara = FALSE, confidence = 0.95)
 }
 \arguments{
 \item{data}{The dataset to be analyzed in the form of R data frame}
@@ -22,14 +22,12 @@ KnownErrorDR(data, indA, indYerror, indXtrt, indXout, sensitivity, specificity,
 
 \item{specificity}{The specified specificity between 0 and 1}
 
-\item{numBoot}{The specified number of bootstrap replicates for variance estimation}
-
 \item{sharePara}{if the treated and untreated groups share parameters for covariates in the logistic outcome model (i.e., assuming Y~ T+X), then set \code{sharePara=TRUE}; if not (i.e., modeling Y~ X for the treated and untreated groups separately), then set \code{sharePara=FALSE}. By default,  \code{sharePara=FALSE}}
 
 \item{confidence}{The confidence level between 0 and 1; the default is 0.95 corresponding to a 95 per cent confidence interval}
 }
 \value{
-A list of the estimate of average treatment effect, bootstrap standard error and confidence interval
+A list of the estimate of average treatment effect, standard error and confidence interval
 }
 \description{
 Doubly robust estimation of average treatment effect with known outcome misclassification probabilities, i.e., known sensitivity and specificity
@@ -49,7 +47,6 @@ Yast=Y
 da=data.frame(A=A,X=X,xx=xx,Yast=Yast)
 head(da)
 #apply the doubly robust correction method with sensitivity=0.95 and specificity=0.85
-set.seed(100)
-KnownErrorDR(da,"A","Yast",c("X","xx"),c("X","xx"),0.95,0.85,50,FALSE,0.95)
+KnownErrorDR(da,"A","Yast",c("X","xx"),c("X","xx"),0.95,0.85,FALSE,0.95)
 
 }
