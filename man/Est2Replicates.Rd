@@ -10,11 +10,11 @@ Est2Replicates(data, indA, indYerror, indX,
   specificity = NULL, prevalence = NULL, confidence = 0.95)
 }
 \arguments{
-\item{data}{The dataset to be analyzed in the form of R data frame}
+\item{data}{The dataset to be analyzed in the form of R data frame without missing data}
 
-\item{indA}{A column name indicating the treatment variable}
+\item{indA}{A column name indicating the binary treatment variable}
 
-\item{indYerror}{A vector of two column names indicating replicates of the outcome variable}
+\item{indYerror}{A vector of two column names indicating replicates of the binary outcome variable}
 
 \item{indX}{A vector of column names indicating the covariates included in the treatment model}
 
@@ -29,7 +29,7 @@ Est2Replicates(data, indA, indYerror, indX,
 \item{confidence}{The confidence level between 0 and 1; the default is 0.95 corresponding to a 95 per cent confidence interval}
 }
 \value{
-A list of the estimate of average treatment effect, sandwich standard error, confidence interval, imposed constraint, and the information on sensitivity and specificity
+A list of the estimate of average treatment effect, sandwich-variance-based standard error, confidence interval, imposed constraint, and the information on sensitivity and specificity
 }
 \description{
 Estimation of average treatment effect when misclassification probabilities are unknown but two independent replicates of the outcome are available

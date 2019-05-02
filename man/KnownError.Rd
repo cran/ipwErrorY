@@ -8,11 +8,11 @@ KnownError(data, indA, indYerror, indX, sensitivity, specificity,
   confidence = 0.95)
 }
 \arguments{
-\item{data}{The dataset to be analyzed in the form of R data frame}
+\item{data}{The dataset to be analyzed in the form of R data frame without missing data}
 
-\item{indA}{A column name indicating the treatment variable}
+\item{indA}{A column name indicating the binary treatment variable}
 
-\item{indYerror}{A column name indicating the misclassified outcome variable}
+\item{indYerror}{A column name indicating the misclassified binary outcome variable}
 
 \item{indX}{A vector of column names indicating the covariates included in the treatment model}
 
@@ -23,7 +23,7 @@ KnownError(data, indA, indYerror, indX, sensitivity, specificity,
 \item{confidence}{The confidence level between 0 and 1; the default is 0.95 corresponding to a 95 per cent confidence interval}
 }
 \value{
-A list of the estimate of average treatment effect, sandwich standard error and confidence interval
+A list of the estimate of average treatment effect, sandwich-variance-based standard error and confidence interval
 }
 \description{
 Estimation of average treatment effect with known outcome misclassification probabilities, i.e., known sensitivity and specificity

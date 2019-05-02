@@ -1,14 +1,14 @@
 #' Estimation of ATE with Validation Data
 #'
 #' Estimation of average treatment effect using the optimal linear combination method when misclassification probabilities are unknown but validation data are available
-#'@param maindata The non-validation main data in the form of R data frame
-#'@param validationdata The validation data in the form of R data frame
-#'@param indA A column name indicating the treatment variable
-#'@param indYerror A column name indicating the misclassified outcome variable
+#'@param maindata The non-validation main data in the form of R data frame without missing data
+#'@param validationdata The validation data in the form of R data frame without missing data
+#'@param indA A column name indicating the binary treatment variable
+#'@param indYerror A column name indicating the misclassified binary outcome variable
 #'@param indX A vector of column names indicating the covariates included in the treatment model
-#'@param indY A column name indicating the true outcome variable 
+#'@param indY A column name indicating the true binary outcome variable 
 #'@param confidence The confidence level between 0 and 1; the default is 0.95 corresponding to a 95 per cent confidence interval
-#'@return A list of the estimate of average treatment effect, sandwich standard error, confidence interval, and the estimated sensitivity and specificity
+#'@return A list of the estimate of average treatment effect, sandwich-variance-based standard error, confidence interval, and the estimated sensitivity and specificity
 #'@import stats
 #'
 #'@examples

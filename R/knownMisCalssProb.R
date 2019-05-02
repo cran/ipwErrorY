@@ -1,14 +1,14 @@
 #' Estimation of ATE with Known Error
 #'
 #' Estimation of average treatment effect with known outcome misclassification probabilities, i.e., known sensitivity and specificity
-#'@param data The dataset to be analyzed in the form of R data frame
-#'@param indA A column name indicating the treatment variable
-#'@param indYerror A column name indicating the misclassified outcome variable
+#'@param data The dataset to be analyzed in the form of R data frame without missing data
+#'@param indA A column name indicating the binary treatment variable
+#'@param indYerror A column name indicating the misclassified binary outcome variable
 #'@param indX A vector of column names indicating the covariates included in the treatment model
 #'@param sensitivity The specified sensitivity between 0 and 1
 #'@param specificity The specified specificity between 0 and 1
 #'@param confidence The confidence level between 0 and 1; the default is 0.95 corresponding to a 95 per cent confidence interval
-#'@return A list of the estimate of average treatment effect, sandwich standard error and confidence interval
+#'@return A list of the estimate of average treatment effect, sandwich-variance-based standard error and confidence interval
 #'@import stats
 #'
 #'@examples

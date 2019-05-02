@@ -8,22 +8,22 @@ EstValidation(maindata, validationdata, indA, indYerror, indX, indY,
   confidence = 0.95)
 }
 \arguments{
-\item{maindata}{The non-validation main data in the form of R data frame}
+\item{maindata}{The non-validation main data in the form of R data frame without missing data}
 
-\item{validationdata}{The validation data in the form of R data frame}
+\item{validationdata}{The validation data in the form of R data frame without missing data}
 
-\item{indA}{A column name indicating the treatment variable}
+\item{indA}{A column name indicating the binary treatment variable}
 
-\item{indYerror}{A column name indicating the misclassified outcome variable}
+\item{indYerror}{A column name indicating the misclassified binary outcome variable}
 
 \item{indX}{A vector of column names indicating the covariates included in the treatment model}
 
-\item{indY}{A column name indicating the true outcome variable}
+\item{indY}{A column name indicating the true binary outcome variable}
 
 \item{confidence}{The confidence level between 0 and 1; the default is 0.95 corresponding to a 95 per cent confidence interval}
 }
 \value{
-A list of the estimate of average treatment effect, sandwich standard error, confidence interval, and the estimated sensitivity and specificity
+A list of the estimate of average treatment effect, sandwich-variance-based standard error, confidence interval, and the estimated sensitivity and specificity
 }
 \description{
 Estimation of average treatment effect using the optimal linear combination method when misclassification probabilities are unknown but validation data are available

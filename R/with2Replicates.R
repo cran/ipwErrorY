@@ -1,16 +1,16 @@
 #' Estimation of ATE with Two Replicates 
 #'
 #' Estimation of average treatment effect when misclassification probabilities are unknown but two independent replicates of the outcome are available
-#'@param data The dataset to be analyzed in the form of R data frame
-#'@param indA A column name indicating the treatment variable
-#'@param indYerror A vector of two column names indicating replicates of the outcome variable
+#'@param data The dataset to be analyzed in the form of R data frame without missing data
+#'@param indA A column name indicating the binary treatment variable
+#'@param indYerror A vector of two column names indicating replicates of the binary outcome variable
 #'@param indX A vector of column names indicating the covariates included in the treatment model
 #'@param constraint The constraint to be used; the default assumes sensitivity equals specificity
 #'@param sensitivity The specified sensitivity between 0 and 1 when imposing the constraint that sensitivity is known, and the default is set to be NULL
 #'@param specificity The specified specificity between 0 and 1 when imposing the constraint that specificity is known, and the default is set to be NULL
 #'@param prevalence The specified prevalence between 0 and 1 when imposing the constraint that prevalence is known, and the default is set to be NULL
 #'@param confidence The confidence level between 0 and 1; the default is 0.95 corresponding to a 95 per cent confidence interval
-#'@return A list of the estimate of average treatment effect, sandwich standard error, confidence interval, imposed constraint, and the information on sensitivity and specificity
+#'@return A list of the estimate of average treatment effect, sandwich-variance-based standard error, confidence interval, imposed constraint, and the information on sensitivity and specificity
 #'@import nleqslv
 #'@import stats
 #'
